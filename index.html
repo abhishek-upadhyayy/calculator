@@ -1,0 +1,177 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task 2 – Calculator</title>
+  <style>
+    :root{
+      --bg:#0f1220;
+      --card:#171a2b;
+      --accent:#6aa9ff;
+      --text:#e7ecf5;
+      --muted:#99a1b3;
+      --radius:12px;
+      --shadow:0 8px 24px rgba(0,0,0,.35);
+    }
+    body{
+      margin:0; height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      font-family:system-ui, sans-serif;
+      background:radial-gradient(1000px 500px at 80% -10%, rgba(106,169,255,.15), transparent),
+                 radial-gradient(700px 400px at -10% 30%, rgba(155,123,255,.12), transparent),
+                 var(--bg);
+      color:var(--text);
+    }.calculator{
+  background:var(--card);
+  padding:20px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  width:320px;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:14px;
+}
+
+.display{
+  background:#0a0d18;
+  color:var(--text);
+  font-size:2rem;
+  padding:14px;
+  border-radius:var(--radius);
+  text-align:right;
+  overflow:hidden;
+  white-space:nowrap;
+}
+
+.buttons{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:10px;
+}
+
+button{
+  appearance:none;
+  border:none;
+  font-size:1.2rem;
+  padding:16px;
+  border-radius:var(--radius);
+  background:#22263d;
+  color:var(--text);
+  cursor:pointer;
+  font-weight:600;
+  transition:transform .15s ease, background .2s ease;
+}
+button:hover{ background:#2c3152; transform:translateY(-1px); }
+button:active{ transform:translateY(0); }
+
+.operator{ color:var(--accent); font-weight:700; }
+.span-2{ grid-column:span 2; }
+
+  </style>
+</head>
+<body>
+  <div class="calculator" role="application" aria-label="Basic Calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button data-action="clear">C</button>
+      <button data-action="del">⌫</button>
+      <button data-action="/" class="operator">÷</button>
+      <button data-action="*" class="operator">×</button><button>7</button>
+  <button>8</button>
+  <button>9</button>
+  <button data-action="-" class="operator">−</button>
+
+  <button>4</button>
+  <button>5</button>
+  <button>6</button>
+  <button data-action="+" class="operator">+</button>
+
+  <button>1</button>
+  <button>2</button>
+  <button>3</button>
+  <button data-action="=" class="operator">=</button>
+
+  <button class="span-2">0</button>
+  <button>.</button>
+</div>
+
+  </div>  <script>
+    const display = document.getElementById('display');
+    const buttons = document.querySelectorAll('.buttons button');
+
+    let current = '0';
+    let resetNext = false;
+
+    function updateDisplay(){
+      display.textContent = current;
+    }
+
+    function appendValue(value){
+      if(resetNext){
+        current = '';
+        resetNext = false;
+      }
+      if(current === '0' && value !== '.'){
+        current = value;
+      } else {
+        current += value;
+      }
+      updateDisplay();
+    }
+
+    function calculate(){
+      try {
+        // Use Function constructor instead of eval for safety
+        const result = Function('return ' + current.replace(/÷/g,'/').replace(/×/g,'*'))();
+        current = String(result);
+      } catch {
+        current = 'Error';
+      }
+      updateDisplay();
+      resetNext = true;
+    }
+
+    function handleAction(action){
+      if(action === 'clear'){
+        current = '0';
+      } else if(action === 'del'){
+        current = current.length > 1 ? current.slice(0,-1) : '0';
+      } else if(action === '='){
+        calculate();
+        return;
+      } else {
+        current += action;
+      }
+      updateDisplay();
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        if(action){
+          handleAction(action);
+        } else {
+          appendValue(btn.textContent);
+        }
+      });
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if((e.key >= '0' && e.key <= '9') || e.key === '.'){
+        appendValue(e.key);
+      } else if(['+','-','*','/'].includes(e.key)){
+        handleAction(e.key);
+      } else if(e.key === 'Enter' || e.key === '='){
+        e.preventDefault();
+        handleAction('=');
+      } else if(e.key === 'Backspace'){
+        handleAction('del');
+      } else if(e.key.toLowerCase() === 'c'){
+        handleAction('clear');
+      }
+    });
+
+    updateDisplay();
+  </script></body>
+</html>
